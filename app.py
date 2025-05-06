@@ -7,6 +7,13 @@ import re
 import base64
 from io import BytesIO
 
+# --- Streamlit Page Config (must be first) ---
+st.set_page_config(
+    page_title="🎨 Color Detector",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
 # --- Load color data ---
 @st.cache_data
 def load_colors():
@@ -46,34 +53,6 @@ def rgb_to_cmyk(R, G, B):
     return f"cmyk({int(C*100)}%, {int(M*100)}%, {int(Y*100)}%, {int(K*100)}%)"
 
 # --- Streamlit Page Config ---
-st.set_page_config(
-    page_title="🎨 Color Detector",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
-
-st.markdown(
-    """
-    <style>
-        body {
-            background-color: #f5f7fa;
-        }
-        .stApp {
-            background-color: #f0f4f8;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
-        }
-        .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# --- App UI ---
 st.title("🎨 Color Detector App")
 st.write("You can either **upload an image**, **paste a color code**, or **paste an image as base64** to get the detected color details.")
 
@@ -194,4 +173,3 @@ if base64_input:
 
     except Exception as e:
         st.error(f"Error processing image: {e}")
-
