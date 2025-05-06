@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import cv2
+
 from PIL import Image
 from io import BytesIO
 import colorsys
