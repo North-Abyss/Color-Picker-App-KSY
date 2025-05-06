@@ -4,6 +4,8 @@ import pandas as pd
 from PIL import Image
 import colorsys
 import re
+import base64
+from io import BytesIO
 
 # --- Load color data ---
 @st.cache_data
@@ -73,8 +75,7 @@ st.markdown(
 
 # --- App UI ---
 st.title("🎨 Color Detector App")
-st.write("Upload an image and click anywhere to detect color name and values in **HEX**, **RGB**, **HSL**, **CMYK** formats.")
-st.write("Alternatively, you can **paste a color code** (HEX, RGB, HSL, CMYK) to quickly get the matching color.")
+st.write("You can either **upload an image**, **paste a color code**, or **paste an image as base64** to get the detected color details.")
 
 # --- Color Input Section ---
 color_input = st.text_input("🔎 Paste a color code (HEX, RGB, HSL, CMYK)")
@@ -148,40 +149,49 @@ if color_input:
         st.write(f"**HEX:** `{hex_val.upper()}`")
         st.write(f"**HSL:** `{hsl_val}`")
 
-# --- Image Upload Section ---
-uploaded_file = st.file_uploader("📤 Or, upload an image to pick a color", type=["png", "jpg", "jpeg"])
+# --- Image Paste Section ---
+st.markdown("### 🖼️ Paste an Image (Base64)")
+base64_input = st.text_area("Paste your image as base64 string (or image URL)")
 
-if uploaded_file:
-    image = Image.open(uploaded_file).convert('RGB')
-    image_np = np.array(image)
-    st.image(image, caption="🖱️ Click on the image below to pick a color", use_column_width=True)
+if base64_input:
+    try:
+        # Try to convert the base64 string into an image
+        if base64_input.startswith("data:image"):
+            header, encoded_data = base64_input.split(",", 1)
+            image_data = base64.b64decode(encoded_data)
+            image = Image.open(BytesIO(image_data))
+            image_np = np.array(image)
+            st.image(image, caption="Uploaded Image (Pasted)", use_column_width=True)
 
-    from streamlit_drawable_canvas import st_canvas
-    canvas_result = st_canvas(
-        fill_color="rgba(255, 165, 0, 0.3)",
-        stroke_width=1,
-        background_image=image,
-        update_streamlit=True,
-        height=image.height,
-        width=image.width,
-        drawing_mode="point",
-        key="canvas",
-    )
+            from streamlit_drawable_canvas import st_canvas
+            canvas_result = st_canvas(
+                fill_color="rgba(255, 165, 0, 0.3)",
+                stroke_width=1,
+                background_image=image,
+                update_streamlit=True,
+                height=image.height,
+                width=image.width,
+                drawing_mode="point",
+                key="canvas",
+            )
 
-    if canvas_result.json_data and canvas_result.json_data["objects"]:
-        x = int(canvas_result.json_data["objects"][-1]["left"])
-        y = int(canvas_result.json_data["objects"][-1]["top"])
-        R, G, B = image_np[y, x]
-        hex_val = rgb_to_hex(R, G, B)
-        hsl_val = rgb_to_hsl(R, G, B)
-        cmyk_val = rgb_to_cmyk(R, G, B)
-        color_name = get_closest_color_name(R, G, B)
+            if canvas_result.json_data and canvas_result.json_data["objects"]:
+                x = int(canvas_result.json_data["objects"][-1]["left"])
+                y = int(canvas_result.json_data["objects"][-1]["top"])
+                R, G, B = image_np[y, x]
+                hex_val = rgb_to_hex(R, G, B)
+                hsl_val = rgb_to_hsl(R, G, B)
+                cmyk_val = rgb_to_cmyk(R, G, B)
+                color_name = get_closest_color_name(R, G, B)
 
-        st.markdown("---")
-        st.markdown(f"### 🎯 Detected Color at ({x}, {y})")
-        st.color_picker("Preview", hex_val, disabled=True)
-        st.write(f"**Name:** `{color_name}`")
-        st.write(f"**HEX:** `{hex_val.upper()}`")
-        st.write(f"**RGB:** `rgb({R}, {G}, {B})`")
-        st.write(f"**HSL:** `{hsl_val}`")
-        st.write(f"**CMYK:** `{cmyk_val}`")
+                st.markdown(f"### 🎯 Detected Color at ({x}, {y})")
+                st.color_picker("Preview", hex_val, disabled=True)
+                st.write(f"**Name:** `{color_name}`")
+                st.write(f"**HEX:** `{hex_val.upper()}`")
+                st.write(f"**RGB:** `rgb({R}, {G}, {B})`")
+                st.write(f"**HSL:** `{hsl_val}`")
+                st.write(f"**CMYK:** `{cmyk_val}`")
+
+    except Exception as e:
+        st.error(f"Error processing image: {e}")
+
