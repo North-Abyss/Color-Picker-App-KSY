@@ -7,6 +7,7 @@ import re
 import base64
 from io import BytesIO
 from streamlit_drawable_canvas import st_canvas
+from io import StringIO
 
 # --- Streamlit Page Config ---
 st.set_page_config(
@@ -19,7 +20,9 @@ st.set_page_config(
 @st.cache_data
 def load_colors():
     url = "https://raw.githubusercontent.com/codebrainz/color-names/master/output/colors.csv"
-    return pd.read_csv(url)
+    df = pd.read_csv(url, header=None)
+    df.columns = ["name", "r", "g", "b"]
+    return df
 
 colors_df = load_colors()
 
