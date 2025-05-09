@@ -39,7 +39,7 @@ A real-time, pixel-accurate color detection tool for designers, developers, arti
 
 ## 📸 Demo
 
-<img src="https://your-screenshot-or-demo-gif-url" alt="Demo Screenshot" width="100%">
+![Demo Screenshot](https://raw.githubusercontent.com/North-Abyss/Color-Picker-App-KSY/main/Color%20Picker%20Demo%20Streamlit.png)
 
 ---
 
