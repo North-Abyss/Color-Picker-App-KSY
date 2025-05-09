@@ -1,65 +1,46 @@
 import streamlit as st
-import numpy as np
 from PIL import Image
-from streamlit_drawable_canvas import st_canvas
+import io
 
-# --- Page Config ---
-st.set_page_config(page_title="🎨 Image Color Picker", layout="centered")
-st.title("🎯 Simple Image Color Picker")
-st.caption("Upload an image and click on it to pick a color. Values are easy to copy.")
+# Function to convert RGB to Hex
+def _from_rgb(rgb):
+    return "#%02x%02x%02x" % rgb
 
-# --- Utility Functions ---
-def rgb_to_hex(r, g, b):
-    return '#{:02X}{:02X}{:02X}'.format(r, g, b)
+# Function to get color from a clicked pixel
+def get_color_from_image(img, x, y):
+    pixel = img.getpixel((x, y))
+    hex_color = _from_rgb(pixel)
+    return pixel, hex_color
 
-def color_card(hex_val, rgb_str):
-    """Display color swatch with copyable HEX and RGB."""
-    st.markdown(f"""
-    <div style="display: flex; align-items: center; margin-bottom: 1rem; border-radius: 12px;
-                background: {hex_val}; padding: 1rem; color: {'#000' if sum(int(hex_val[i:i+2], 16) for i in (1,3,5)) > 382 else '#FFF'}">
-        <div style="flex: 1;">
-            <div style="font-weight: bold;">{hex_val}</div>
-            <div>{rgb_str}</div>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <button onclick="navigator.clipboard.writeText('{hex_val}')" style="cursor: pointer;">📋 Copy HEX</button>
-            <button onclick="navigator.clipboard.writeText('{rgb_str}')" style="cursor: pointer;">📋 Copy RGB</button>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+# Streamlit App
+def main():
+    st.title("Click on the Image to Pick a Color")
 
-# --- Upload Image ---
-uploaded_image = st.file_uploader("📷 Upload Image (PNG/JPG)", type=["png", "jpg", "jpeg"])
+    # File upload for the image
+    uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
 
-if uploaded_image:
-    image = Image.open(uploaded_image).convert("RGB")
-    image_np = np.array(image)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    if uploaded_file:
+        # Load the image
+        img = Image.open(uploaded_file)
+        st.image(img, caption="Uploaded Image", use_column_width=True)
 
-    # --- Canvas ---
-    canvas_result = st_canvas(
-        background_image=image,
-        update_streamlit=True,
-        height=image.height,
-        width=image.width,
-        drawing_mode="point",
-        stroke_width=1,
-        key="canvas_picker"
-    )
+        # Convert the image to a format for processing
+        img = img.convert("RGB")
 
-    # --- Get Clicked Color ---
-    if canvas_result.json_data and canvas_result.json_data["objects"]:
-        click = canvas_result.json_data["objects"][-1]
-        x, y = int(click["left"]), int(click["top"])
+        # Let the user click on the image and get pixel color
+        st.write("Click on the image to pick a color (not implemented directly in Streamlit).")
 
-        if 0 <= y < image_np.shape[0] and 0 <= x < image_np.shape[1]:
-            r, g, b = image_np[y, x]
-            hex_val = rgb_to_hex(r, g, b)
-            rgb_str = f"rgb({r}, {g}, {b})"
+        # Placeholder for displaying the color values
+        color_container = st.empty()
+        color_container.text("Color values will be shown here.")
 
-            st.markdown("### 🎨 Selected Color")
-            color_card(hex_val, rgb_str)
-        else:
-            st.warning("⚠️ Clicked outside image bounds.")
-else:
-    st.info("Upload an image to begin.")
+        # Add button to open another image
+        if st.button("Open Another Image"):
+            main()
+
+        # Handle the color extraction via mouse click (using an external tool like OpenCV, as Streamlit doesn't handle mouse events natively)
+        # Since Streamlit can't capture mouse events over images, you'd need to handle this differently, e.g., through manual input
+        st.warning("Mouse click event is not directly supported in Streamlit, consider alternative ways to select color.")
+
+if __name__ == "__main__":
+    main()
