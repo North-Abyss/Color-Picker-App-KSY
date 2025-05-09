@@ -92,29 +92,35 @@ def main():
             disp_img.thumbnail(max_size)
             width, height = disp_img.size
 
+            # Initial coordinate values
+            if 'x' not in st.session_state:
+                st.session_state.x = width // 2
+            if 'y' not in st.session_state:
+                st.session_state.y = height // 2
+
             # Sliders to select pixel
             col1, col2 = st.columns(2)
             with col1:
-                x = st.slider("X Coordinate", 0, width - 1, width // 2)
+                st.write(f"X: {st.session_state.x}")
             with col2:
-                y = st.slider("Y Coordinate", 0, height - 1, height // 2)
+                st.write(f"Y: {st.session_state.y}")
 
-            # Adding buttons for fine adjustment
+            # Buttons for fine adjustment (increasing/decreasing X and Y by 1)
             col3, col4 = st.columns(2)
             with col3:
                 if st.button('Increase X +'):
-                    x = min(x + 1, width - 1)
+                    st.session_state.x = min(st.session_state.x + 1, width - 1)
             with col4:
                 if st.button('Decrease X -'):
-                    x = max(x - 1, 0)
+                    st.session_state.x = max(st.session_state.x - 1, 0)
 
             col5, col6 = st.columns(2)
             with col5:
                 if st.button('Increase Y +'):
-                    y = min(y + 1, height - 1)
+                    st.session_state.y = min(st.session_state.y + 1, height - 1)
             with col6:
                 if st.button('Decrease Y -'):
-                    y = max(y - 1, 0)
+                    st.session_state.y = max(st.session_state.y - 1, 0)
 
             # Convert image to base64
             buffered = io.BytesIO()
@@ -125,14 +131,14 @@ def main():
             st.markdown(f"""
             <div style="position: relative; display: inline-block; border: 1px solid #ccc;">
                 <img src="data:image/png;base64,{img_b64}" width="{width}" height="{height}">
-                <div style="position: absolute; top: 0; left: {x}px; width: 1px; height: {height}px; background-color: red;"></div>
-                <div style="position: absolute; top: {y}px; left: 0; width: {width}px; height: 1px; background-color: red;"></div>
+                <div style="position: absolute; top: 0; left: {st.session_state.x}px; width: 1px; height: {height}px; background-color: red;"></div>
+                <div style="position: absolute; top: {st.session_state.y}px; left: 0; width: {width}px; height: 1px; background-color: red;"></div>
             </div>
             """, unsafe_allow_html=True)
 
             try:
-                color = get_color_at_point(disp_img, x, y)
-                st.success(f"Selected Pixel Color at ({x}, {y})")
+                color = get_color_at_point(disp_img, st.session_state.x, st.session_state.y)
+                st.success(f"Selected Pixel Color at ({st.session_state.x}, {st.session_state.y})")
                 display_color_block(color)
             except Exception:
                 st.error("Invalid coordinates or image issue.")
