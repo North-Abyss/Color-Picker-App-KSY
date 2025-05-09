@@ -8,6 +8,24 @@ import base64
 def _from_rgb(rgb):
     return "#%02x%02x%02x" % rgb
 
+# Convert RGB to other formats (e.g., HSL, CMYK)
+def rgb_to_hsl(rgb):
+    r, g, b = rgb[0] / 255.0, rgb[1] / 255.0, rgb[2] / 255.0
+    mx = max(r, g, b)
+    mn = min(r, g, b)
+    h = (mx + mn) / 2
+    s = (mx - mn) / 2 if mx == mn else (mx - mn) / (1 - abs(2 * h - 1))
+    l = (mx + mn) / 2
+    return tuple(int(c * 255) for c in (h, s, l))
+
+def rgb_to_cmyk(rgb):
+    r, g, b = rgb[0] / 255.0, rgb[1] / 255.0, rgb[2] / 255.0
+    k = 1 - max(r, g, b)
+    c = (1 - r - k) / (1 - k)
+    m = (1 - g - k) / (1 - k)
+    y = (1 - b - k) / (1 - k)
+    return tuple([int(val * 100) for val in (c, m, y, k)])
+
 # Get top N unique colors
 def get_unique_colors(img, top_n=100):
     img = img.convert("RGB")
@@ -19,11 +37,22 @@ def get_unique_colors(img, top_n=100):
     return [tuple(c) for c in top_colors]
 
 # Display color swatch with RGB and Hex
-def display_color_block(color):
+def display_color_block(color, format_type="RGB"):
     hex_color = _from_rgb(color)
     rgb_text = f"RGB: {color}"
     hex_text = f"Hex: {hex_color}"
 
+    if format_type == "HSL":
+        hsl = rgb_to_hsl(color)
+        hsl_text = f"HSL: {hsl}"
+        display_text = hsl_text
+    elif format_type == "CMYK":
+        cmyk = rgb_to_cmyk(color)
+        cmyk_text = f"CMYK: {cmyk}"
+        display_text = cmyk_text
+    else:
+        display_text = rgb_text
+    
     col1, col2 = st.columns([1, 4])
     with col1:
         st.markdown(
@@ -31,7 +60,7 @@ def display_color_block(color):
             unsafe_allow_html=True
         )
     with col2:
-        st.code(rgb_text)
+        st.code(display_text)
         st.code(hex_text)
 
 # Get pixel color from image
@@ -74,7 +103,6 @@ def main():
                         ["🎨 Color Palette", "🖱️ Color Picker", "🧩 Average Grid Palette"],
                         index=1  # This sets "🖱️ Color Picker" as default 
                        )
-
 
         if mode == "🎨 Color Palette":
             st.subheader("Top Colors in Image")
