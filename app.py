@@ -113,7 +113,7 @@ def main():
                 display_color_block(color)
 
         elif mode == "🖱️ Color Picker":
-            st.subheader("🎯 Pixel Color Selector with Crosshair")
+            st.subheader("🎯 Pixel Color Selector")
 
             max_size = (400, 400)
             disp_img = image.copy()
@@ -126,28 +126,31 @@ def main():
             if 'y' not in st.session_state:
                 st.session_state.y = height // 2
 
-            # Sliders to select pixel
+            # Display the current coordinates
+            st.write(f"Current Coordinates: X = {st.session_state.x}, Y = {st.session_state.y}")
+
+            # Sliders for fine adjustment (X and Y)
             col1, col2 = st.columns(2)
             with col1:
-                st.write(f"X: {st.session_state.x}")
+                st.session_state.x = st.slider("Select X Coordinate", 0, width - 1, st.session_state.x)
             with col2:
-                st.write(f"Y: {st.session_state.y}")
+                st.session_state.y = st.slider("Select Y Coordinate", 0, height - 1, st.session_state.y)
 
             # Buttons for fine adjustment (increasing/decreasing X and Y by 1)
             col3, col4 = st.columns(2)
             with col3:
-                if st.button('Increase X +'):
+                if st.button('X+'):
                     st.session_state.x = min(st.session_state.x + 1, width - 1)
             with col4:
-                if st.button('Decrease X -'):
+                if st.button('X-'):
                     st.session_state.x = max(st.session_state.x - 1, 0)
 
             col5, col6 = st.columns(2)
             with col5:
-                if st.button('Increase Y +'):
+                if st.button('Y+'):
                     st.session_state.y = min(st.session_state.y + 1, height - 1)
             with col6:
-                if st.button('Decrease Y -'):
+                if st.button('Y-'):
                     st.session_state.y = max(st.session_state.y - 1, 0)
 
             # Convert image to base64
@@ -167,7 +170,7 @@ def main():
             try:
                 color = get_color_at_point(disp_img, st.session_state.x, st.session_state.y)
                 st.success(f"Selected Pixel Color at ({st.session_state.x}, {st.session_state.y})")
-                display_color_block(color)
+                st.write(f"RGB: {color}")
             except Exception:
                 st.error("Invalid coordinates or image issue.")
 
