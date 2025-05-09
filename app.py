@@ -1,66 +1,66 @@
-import streamlit as st
-from PIL import Image
-import numpy as np
-import matplotlib.colors as mcolors
-
-# Function to convert RGB to Hex
-def _from_rgb(rgb):
-    return "#%02x%02x%02x" % rgb
-
-# Function to get all unique colors from the image
-def get_unique_colors(img):
-    # Convert image to RGB and then numpy array
-    img_rgb = img.convert('RGB')
-    img_array = np.array(img_rgb)
-
-    # Get unique colors and their frequency in the image
-    unique_colors = {}
-    for row in img_array:
-        for pixel in row:
-            color = tuple(pixel)
-            if color not in unique_colors:
-                unique_colors[color] = 1
-            else:
-                unique_colors[color] += 1
-    return unique_colors
-
-# Streamlit App
 def main():
-    st.title("Unique Colors from Image")
+    st.set_page_config(page_title="Image Color Picker", layout="wide")
+    st.title("🎨 Image Color Picker Tool")
 
-    # File upload for the image
+    # Upload image
     uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
 
     if uploaded_file:
-        # Load the image
-        img = Image.open(uploaded_file)
-        st.image(img, caption="Uploaded Image", use_column_width=True)
+        image = Image.open(uploaded_file)
+        st.image(image, use_column_width=True)
 
-        # Get unique colors from the image
-        unique_colors = get_unique_colors(img)
+        # Mode toggle
+        mode = st.radio("Select Mode", ["🎨 Color Palette", "🖱️ Color Picker", "🧩 Average Grid Palette"])
 
-        # Display colors as squares with RGB and Hex values
-        st.write("Unique Colors in the Image:")
-        
-        for color, count in unique_colors.items():
-            hex_color = _from_rgb(color)
-            
-            # Create a square of the color
-            col1, col2 = st.columns([1, 5])  # Create two columns
-            with col1:
-                st.markdown(f'<div style="background-color:{hex_color}; width: 30px; height: 30px;"></div>', unsafe_allow_html=True)
-            with col2:
-                st.write(f"RGB: {color}  Hex: {hex_color}")
-                copy_rgb_button = st.button(f"Copy RGB {color}", key=f"copy_rgb_{color}")
-                copy_hex_button = st.button(f"Copy Hex {hex_color}", key=f"copy_hex_{hex_color}")
-                
-                if copy_rgb_button:
-                    st.text(f"Copied RGB: {color}")
-                if copy_hex_button:
-                    st.text(f"Copied Hex: {hex_color}")
-                
+        if mode == "🎨 Color Palette":
+            st.subheader("Top Colors in Image")
+            top_n = st.slider("Number of Colors", 5, 100, 30)
+            colors = get_unique_colors(image, top_n)
+
+            for color in colors:
+                display_color_block(color)
+
+        elif mode == "🖱️ Color Picker":
+            st.subheader("Click on the image to pick a color")
+
+            max_size = (500, 500)
+            disp_img = image.copy()
+            disp_img.thumbnail(max_size)
+
+            x = st.number_input("X coordinate", min_value=0, max_value=disp_img.width - 1, value=0)
+            y = st.number_input("Y coordinate", min_value=0, max_value=disp_img.height - 1, value=0)
+
+            try:
+                color = get_color_at_point(disp_img, x, y)
+                st.success("Selected Color")
+                display_color_block(color)
+            except:
+                st.error("Invalid coordinates")
+
+        elif mode == "🧩 Average Grid Palette":
+            st.subheader("Grid-based Average Colors")
+
+            # Choose grid size
+            cols = st.slider("Number of Columns", 3, 12, 6)
+            rows = st.slider("Number of Rows", 2, 10, 4)
+
+            img = image.convert("RGB")
+            img_array = np.array(img)
+            h, w, _ = img_array.shape
+
+            block_w = w // cols
+            block_h = h // rows
+
+            for r in range(rows):
+                st.markdown("---")
+                cols_in_row = st.columns(cols)
+                for c in range(cols):
+                    x_start = c * block_w
+                    y_start = r * block_h
+                    block = img_array[y_start:y_start + block_h, x_start:x_start + block_w]
+                    avg_color = tuple(np.mean(block.reshape(-1, 3), axis=0).astype(int))
+                    with cols_in_row[c]:
+                        display_color_block(avg_color)
+
     else:
-        st.write("Please upload an image to see the unique colors.")
-
-if __name__ == "__main__":
-    main()
+        st.info("Upload an image to begin.")
