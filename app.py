@@ -142,13 +142,13 @@ def main():
                 if st.button('X+'):
                     st.session_state.x = min(st.session_state.x + 1, width - 1)
             with col4:
-                if st.button('X-'):
-                    st.session_state.x = max(st.session_state.x - 1, 0)
+                if st.button('Y+'):
+                    st.session_state.y = min(st.session_state.y + 1, height - 1)
 
             col5, col6 = st.columns(2)
             with col5:
-                if st.button('Y+'):
-                    st.session_state.y = min(st.session_state.y + 1, height - 1)
+                if st.button('X-'):
+                    st.session_state.x = max(st.session_state.x - 1, 0)
             with col6:
                 if st.button('Y-'):
                     st.session_state.y = max(st.session_state.y - 1, 0)
