@@ -99,6 +99,23 @@ def main():
             with col2:
                 y = st.slider("Y Coordinate", 0, height - 1, height // 2)
 
+            # Adding buttons for fine adjustment
+            col3, col4 = st.columns(2)
+            with col3:
+                if st.button('Increase X +'):
+                    x = min(x + 1, width - 1)
+            with col4:
+                if st.button('Decrease X -'):
+                    x = max(x - 1, 0)
+
+            col5, col6 = st.columns(2)
+            with col5:
+                if st.button('Increase Y +'):
+                    y = min(y + 1, height - 1)
+            with col6:
+                if st.button('Decrease Y -'):
+                    y = max(y - 1, 0)
+
             # Convert image to base64
             buffered = io.BytesIO()
             disp_img.save(buffered, format="PNG")
