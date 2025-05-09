@@ -166,11 +166,11 @@ def main():
                 <div style="position: absolute; top: {st.session_state.y}px; left: 0; width: {width}px; height: 1px; background-color: red;"></div>
             </div>
             """, unsafe_allow_html=True)
-
+            
             try:
-                color = get_color_at_point(disp_img, st.session_state.x, st.session_state.y)
-                st.success(f"Selected Pixel Color at ({st.session_state.x}, {st.session_state.y})")
-                st.write(f"RGB: {color}")
+                color = get_color_at_point(disp_img, x, y)
+                st.success(f"Selected Pixel Color at ({x}, {y})")
+                display_color_block(color)
             except Exception:
                 st.error("Invalid coordinates or image issue.")
 
