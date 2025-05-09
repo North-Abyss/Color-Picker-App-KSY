@@ -26,7 +26,10 @@ def display_color_block(color):
 
     col1, col2 = st.columns([1, 4])
     with col1:
-        st.markdown(f"<div style='width:40px; height:40px; background:{hex_color}; border-radius:4px;'></div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div style='width:40px; height:40px; background:{hex_color}; border-radius:4px;'></div>",
+            unsafe_allow_html=True
+        )
     with col2:
         st.code(rgb_text)
         st.code(hex_text)
@@ -51,7 +54,7 @@ def get_grid_average_colors(img, cols=6, rows=4):
         for c in range(cols):
             x_start = c * block_w
             y_start = r * block_h
-            block = img_array[y_start:y_start+block_h, x_start:x_start+block_w]
+            block = img_array[y_start:y_start + block_h, x_start:x_start + block_w]
             avg_color = tuple(np.mean(block.reshape(-1, 3), axis=0).astype(int))
             row_colors.append(avg_color)
         avg_colors.append(row_colors)
@@ -66,9 +69,12 @@ def main():
 
     if uploaded_file:
         image = Image.open(uploaded_file)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
 
-        mode = st.radio("Select Mode", ["🎨 Color Palette", "🖱️ Color Picker", "🧩 Average Grid Palette"])
+        mode = st.radio("Select Mode",
+                        ["🎨 Color Palette", "🖱️ Color Picker", "🧩 Average Grid Palette"],
+                        index=1  # This sets "🖱️ Color Picker" as default 
+                       )
+
 
         if mode == "🎨 Color Palette":
             st.subheader("Top Colors in Image")
@@ -79,34 +85,40 @@ def main():
                 display_color_block(color)
 
         elif mode == "🖱️ Color Picker":
-            st.subheader("Select a Pixel Color by Grid Location")
+            st.subheader("🎯 Pixel Color Selector with Crosshair")
 
-            # Resize for display and coordinate mapping
             max_size = (400, 400)
             disp_img = image.copy()
             disp_img.thumbnail(max_size)
-            disp_array = np.array(disp_img)
+            width, height = disp_img.size
 
-            h, w = disp_img.size
-            st.image(disp_img, caption="Click Position Reference Image", width=w)
-
-            st.markdown(f"Image Dimensions: **Width: {w}px**, **Height: {h}px**")
-            
-            # Grid-based coordinate selection
-            st.subheader("Choose Pixel Coordinates")
+            # Sliders to select pixel
             col1, col2 = st.columns(2)
             with col1:
-                x = st.slider("X Coordinate", min_value=0, max_value=w - 1, step=1, value=w // 2)
+                x = st.slider("X Coordinate", 0, width - 1, width // 2)
             with col2:
-                y = st.slider("Y Coordinate", min_value=0, max_value=h - 1, step=1, value=h // 2)
+                y = st.slider("Y Coordinate", 0, height - 1, height // 2)
+
+            # Convert image to base64
+            buffered = io.BytesIO()
+            disp_img.save(buffered, format="PNG")
+            img_b64 = base64.b64encode(buffered.getvalue()).decode()
+
+            # Display image with crosshair
+            st.markdown(f"""
+            <div style="position: relative; display: inline-block; border: 1px solid #ccc;">
+                <img src="data:image/png;base64,{img_b64}" width="{width}" height="{height}">
+                <div style="position: absolute; top: 0; left: {x}px; width: 1px; height: {height}px; background-color: red;"></div>
+                <div style="position: absolute; top: {y}px; left: 0; width: {width}px; height: 1px; background-color: red;"></div>
+            </div>
+            """, unsafe_allow_html=True)
 
             try:
                 color = get_color_at_point(disp_img, x, y)
                 st.success(f"Selected Pixel Color at ({x}, {y})")
                 display_color_block(color)
-            except Exception as e:
+            except Exception:
                 st.error("Invalid coordinates or image issue.")
-
 
         elif mode == "🧩 Average Grid Palette":
             st.subheader("Grid-based Average Colors")
