@@ -79,22 +79,34 @@ def main():
                 display_color_block(color)
 
         elif mode == "🖱️ Color Picker":
-            st.subheader("Manually Pick a Color by Coordinates")
+            st.subheader("Select a Pixel Color by Grid Location")
 
-            max_size = (500, 500)
+            # Resize for display and coordinate mapping
+            max_size = (400, 400)
             disp_img = image.copy()
             disp_img.thumbnail(max_size)
+            disp_array = np.array(disp_img)
 
-            width, height = disp_img.size
-            x = st.number_input("X coordinate", min_value=0, max_value=width-1, value=0)
-            y = st.number_input("Y coordinate", min_value=0, max_value=height-1, value=0)
+            h, w = disp_img.size
+            st.image(disp_img, caption="Click Position Reference Image", width=w)
+
+            st.markdown(f"Image Dimensions: **Width: {w}px**, **Height: {h}px**")
+            
+            # Grid-based coordinate selection
+            st.subheader("Choose Pixel Coordinates")
+            col1, col2 = st.columns(2)
+            with col1:
+                x = st.slider("X Coordinate", min_value=0, max_value=w - 1, step=1, value=w // 2)
+            with col2:
+                y = st.slider("Y Coordinate", min_value=0, max_value=h - 1, step=1, value=h // 2)
 
             try:
                 color = get_color_at_point(disp_img, x, y)
-                st.success("Selected Color")
+                st.success(f"Selected Pixel Color at ({x}, {y})")
                 display_color_block(color)
-            except:
-                st.error("Invalid coordinates")
+            except Exception as e:
+                st.error("Invalid coordinates or image issue.")
+
 
         elif mode == "🧩 Average Grid Palette":
             st.subheader("Grid-based Average Colors")
