@@ -3,7 +3,7 @@
 
 A real-time, pixel-accurate color detection tool for designers, developers, artists, and creators. Upload or drag-and-drop any image, click anywhere on it, and instantly view the closest **color name**, along with its **HEX**, **RGB**, **HSL**, and **CMYK** values — all in one sleek, interactive interface.
 
-🌐 **Live Demo** → [Try on Streamlit Cloud]([https://color-picker-app-ksy.streamlit.app/])
+🌐 **Live Demo** → [Try on Streamlit Cloud](https://color-picker-app-ksy.streamlit.app/)
 
 ---
 
